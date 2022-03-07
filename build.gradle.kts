@@ -95,9 +95,8 @@ dependencies {
     val moshiVer = "1.13.0"
 
     // For JSON serialization
-    api("com.squareup.moshi:moshi:$moshiVer")
-    api("com.squareup.moshi:moshi-kotlin:$moshiVer")
-    api("com.squareup.okio:okio:3.0.0")
+    compileOnly("com.squareup.moshi:moshi:$moshiVer")
+    compileOnly("com.squareup.moshi:moshi-kotlin:$moshiVer")
 
     // https://github.com/MicroUtils/kotlin-logging
     api("io.github.microutils:kotlin-logging:2.1.21")

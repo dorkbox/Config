@@ -5,18 +5,6 @@
      Dorkbox LLC
 
    Extra license information
-     - Moshi - A modern JSON library for Kotlin and Java
-       [The Apache Software License, Version 2.0]
-       https://github.com/square/moshi
-       Copyright 2022
-         Square, Inc
-
-     - OkIO - A modern I/O library for Android, Kotlin, and Java
-       [The Apache Software License, Version 2.0]
-       https://github.com/square/okio
-       Copyright 2022
-         Square, Inc
-
      - kotlin-logging - Lightweight logging framework for Kotlin
        [The Apache Software License, Version 2.0]
        https://github.com/MicroUtils/kotlin-logging
@@ -36,6 +24,12 @@
          JetBrains s.r.o. and Kotlin Programming Language contributors
        Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
        See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
+
+     - Moshi - A modern JSON library for Kotlin and Java
+       [The Apache Software License, Version 2.0]
+       https://github.com/square/moshi
+       Copyright 2022
+         Square, Inc
 
      - Updates - Software Update Management
        [The Apache Software License, Version 2.0]
