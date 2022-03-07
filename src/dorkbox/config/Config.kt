@@ -58,7 +58,7 @@ open class Config<T: Any>(
 
         init {
             // Add this project to the updates system, which verifies this class + UUID + version information
-            dorkbox.updates.Updates.add(Config::class.java, "a2afbd7d98084a9eb6eb663570dbec77", version)
+            dorkbox.updates.Updates.add(Config::class.java, "23475d7cdfef4c1e9c38c310420086ca", version)
         }
     }
 
@@ -160,6 +160,7 @@ open class Config<T: Any>(
         manageOverloadProperties()
         manageGetAndSet(onSaveAction)
 
+        // this contains a "cleaned" set of arguments that excludes overloaded args.
         return this.arguments
     }
 
