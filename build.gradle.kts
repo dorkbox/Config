@@ -38,7 +38,7 @@ object Extras {
     // set for the project
     const val description = "Configuration properties that can be defined via the CLI, system properties, environment variables, or file."
     const val group = "com.dorkbox"
-    const val version = "1.0"
+    const val version = "1.1"
 
     // set as project.ext
     const val name = "Config"
