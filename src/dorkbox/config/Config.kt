@@ -96,13 +96,14 @@ open class Config<T: Any>(
             }
         }
 
-        if (localConfig == null) {
+        val generateLocalConfig = localConfig == null
+        if (generateLocalConfig) {
             localConfig = createDefaultObject()
-            save()
+            configMap = createConfigMap(localConfig)
         }
 
         // now, we make a COPY of the original values from the file (so when saving, we know what the overloaded values are and not save them)
-        originalConfig = localConfig
+        originalConfig = localConfig!!
         // create the map that knows what members have what values
         originalConfigMap = createConfigMap(originalConfig)
 
@@ -111,6 +112,10 @@ open class Config<T: Any>(
         config = moshi.fromJson(moshi.toJson(originalConfig))!!
         // create the map that knows what members have what values
         configMap = createConfigMap(config)
+
+        if (generateLocalConfig) {
+            save()
+        }
 
         return config
     }
