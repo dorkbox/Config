@@ -321,14 +321,25 @@ open class Config<T: Any>(
                 if (foundArg != null) {
                     // we know that split[0] == 'arg=' because we already checked for that
                     val split = foundArg.split(regexEquals)[1].trim()
+                    val splitValue: Any = when (returnType) {
+                        Boolean::class -> split.toBoolean()
+                        Byte::class -> split.toByte()
+                        Char::class -> split[0]
+                        Double::class -> split.toDouble()
+                        Float::class -> split.toFloat()
+                        Int::class -> split.toInt()
+                        Long::class -> split.toLong()
+                        Short::class -> split.toShort()
+                        else -> split
+                    }
 
                     // save this, so we can figure out what the values are on save (and not save overloaded properties, that are unchanged)
                     val get = prop.get()
-                    if (get != split) {
+                    if (get != splitValue) {
                         // only track it if it's different
                         trackedConfigProperties[arg] = get
-                        originalOverloadedProperties[arg] = split
-                        prop.set(split)
+                        originalOverloadedProperties[arg] = splitValue
+                        prop.set(splitValue)
                     }
 
                     arguments.remove(arg)
