@@ -320,18 +320,7 @@ open class Config<T: Any>(
                 var foundArg = arguments.firstOrNull { it.startsWith("$arg=") }
                 if (foundArg != null) {
                     // we know that split[0] == 'arg=' because we already checked for that
-                    val split = foundArg.split(regexEquals)[1].trim()
-                    val splitValue: Any = when (returnType) {
-                        Boolean::class -> split.toBoolean()
-                        Byte::class -> split.toByte()
-                        Char::class -> split[0]
-                        Double::class -> split.toDouble()
-                        Float::class -> split.toFloat()
-                        Int::class -> split.toInt()
-                        Long::class -> split.toLong()
-                        Short::class -> split.toShort()
-                        else -> split
-                    }
+                    val splitValue = foundArg.split(regexEquals)[1].trim().getType(returnType)
 
                     // save this, so we can figure out what the values are on save (and not save overloaded properties, that are unchanged)
                     val get = prop.get()
@@ -384,12 +373,14 @@ open class Config<T: Any>(
                 }
 
                 if (!sysProperty.isNullOrEmpty()) {
+                    val splitValue = sysProperty.getType(returnType)
+
                     val get = prop.get()
-                    if (get != sysProperty) {
+                    if (get != splitValue) {
                         // only track it if it's different
                         trackedConfigProperties[arg] = get
-                        originalOverloadedProperties[arg] = sysProperty
-                        prop.set(sysProperty)
+                        originalOverloadedProperties[arg] = splitValue
+                        prop.set(splitValue)
                     }
 
                     return@forEach
@@ -424,6 +415,20 @@ open class Config<T: Any>(
             } else {
                logger.error("${prop.member.name} (${returnType.javaObjectType.simpleName}) overloading is not supported. Ignoring")
             }
+        }
+    }
+
+    private fun String.getType(propertyType: Any): Any {
+        return when (propertyType) {
+            Boolean::class -> this.toBoolean()
+            Byte::class -> this.toByte()
+            Char::class -> this[0]
+            Double::class -> this.toDouble()
+            Float::class -> this.toFloat()
+            Int::class -> this.toInt()
+            Long::class -> this.toLong()
+            Short::class -> this.toShort()
+            else -> this
         }
     }
 }
