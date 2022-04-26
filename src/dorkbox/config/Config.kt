@@ -23,7 +23,7 @@ import kotlin.system.exitProcess
  * we want to support configuration properties, such that ANYTHING in the config file can ALSO be passed in on the command line or as an env/system property
  *
  * ```
- * commandline > system property > environment variable > properties file
+ * commandline > system property > environment variable > config file
  * ```
  * Once a property has been defined, it cannot be overloaded again via a different method, as specified in the above hierarchy,
  *
@@ -66,7 +66,8 @@ open class Config<T: Any>(
 
     private val moshi = moshiAdapter(Moshi.Builder())
 
-    private lateinit var configFile: File
+    @Volatile
+    private var configFile: File? = null
 
     private lateinit var originalConfig: T
     private lateinit var originalConfigMap: Map<String, ConfigProp>
@@ -81,7 +82,36 @@ open class Config<T: Any>(
     private val trackedConfigProperties = mutableMapOf<String, Any>()
     private val originalOverloadedProperties = mutableMapOf<String, Any>()
 
+    /**
+     * Loads a configuration from disk, if possible.
+     *
+     * ```
+     * commandline > system property > environment variable > config file
+     * ```
+     */
     fun load(configFile: File, createDefaultObject: () -> T): T {
+        return loadMoshi(loadOrNull(configFile), createDefaultObject)
+    }
+
+    /**
+     * Loads a configuration from a string, if possible.
+     *
+     * ```
+     * commandline > system property > environment variable > input string
+     * ```
+     */
+    fun load(configText: String, createDefaultObject: () -> T): T {
+        return loadMoshi(loadOrNull(configText), createDefaultObject)
+    }
+
+    /**
+     * Loads a configuration from disk, if possible.
+     *
+     * ```
+     * commandline > system property > environment variable > config file
+     * ```
+     */
+    fun loadOrNull(configFile: File): T? {
         this.configFile = configFile
         var localConfig: T? = null
         if (configFile.canRead()) {
@@ -96,6 +126,29 @@ open class Config<T: Any>(
             }
         }
 
+        return localConfig
+    }
+
+    /**
+     * Loads a configuration from a string, if possible.
+     *
+     * ```
+     * commandline > system property > environment variable > input string
+     * ```
+     */
+    fun loadOrNull(configText: String): T? {
+        this.configFile = null
+        return try {
+            // we want to make ALL NEW configs, each referencing a DIFFERENT object
+            moshi.fromJson(configText)!!
+        } catch (ignored: Exception) {
+            // there was a problem parsing the config, so we will use null to signify that
+            null
+        }
+    }
+
+    private fun loadMoshi(localConfig: T?, createDefaultObject: () -> T): T {
+        var localConfig = localConfig
         val generateLocalConfig = localConfig == null
         if (generateLocalConfig) {
             localConfig = createDefaultObject()
@@ -120,7 +173,8 @@ open class Config<T: Any>(
         return config
     }
 
-    fun save() {
+
+    fun save(): String {
         val possiblyOverloadedConfigMap = configMap
 
         // now, when we SAVE, we want to make sure that we DO NOT save overloaded values!
@@ -152,7 +206,8 @@ open class Config<T: Any>(
         }
 
         val configToString = moshi.toJson(originalConfig)
-        configFile.writeText(configToString, Charsets.UTF_8)
+        configFile?.writeText(configToString, Charsets.UTF_8)
+        return configToString
     }
 
     /**
