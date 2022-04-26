@@ -473,6 +473,9 @@ open class Config<T: Any>(
         }
     }
 
+    /**
+     * Creates a new config instance using the same info as this one
+     */
     fun newInstance(): Config<T> {
         return Config(environmentVarPrefix, moshiAdapter)
     }
