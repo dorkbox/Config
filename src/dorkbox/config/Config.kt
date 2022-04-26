@@ -44,7 +44,7 @@ open class Config<T: Any>(
      *  And this way, **OUR** path does not conflict with the system path.
      */
     private val environmentVarPrefix: String = "",
-    moshiAdapter: Moshi.Builder.() -> JsonAdapter<T>) {
+    private val moshiAdapter: Moshi.Builder.() -> JsonAdapter<T>) {
 
 
     companion object {
@@ -471,6 +471,10 @@ open class Config<T: Any>(
                logger.error("${prop.member.name} (${returnType.javaObjectType.simpleName}) overloading is not supported. Ignoring")
             }
         }
+    }
+
+    fun newInstance(): Config<T> {
+        return Config(environmentVarPrefix, moshiAdapter)
     }
 
     private fun String.getType(propertyType: Any): Any {
