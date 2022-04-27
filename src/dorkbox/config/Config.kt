@@ -90,7 +90,8 @@ open class Config<T: Any>(
      * ```
      */
     fun load(configFile: File, createDefaultObject: () -> T): T {
-        return loadMoshi(loadOrNull(configFile), createDefaultObject)
+        val localConfig = loadOrNull_(configFile)
+        return loadDefaults(localConfig, createDefaultObject)
     }
 
     /**
@@ -101,7 +102,8 @@ open class Config<T: Any>(
      * ```
      */
     fun load(configText: String, createDefaultObject: () -> T): T {
-        return loadMoshi(loadOrNull(configText), createDefaultObject)
+        val localConfig = loadOrNull_(configText)
+        return loadDefaults(localConfig, createDefaultObject)
     }
 
     /**
@@ -112,6 +114,23 @@ open class Config<T: Any>(
      * ```
      */
     fun loadOrNull(configFile: File): T? {
+        val localConfig = loadOrNull_(configFile)
+        return loadDefaultsOrNull(localConfig)
+    }
+
+    /**
+     * Loads a configuration from a string, if possible.
+     *
+     * ```
+     * commandline > system property > environment variable > input string
+     * ```
+     */
+    fun loadOrNull(configText: String): T? {
+        val localConfig = loadOrNull_(configText)
+        return loadDefaultsOrNull(localConfig)
+    }
+
+    private fun loadOrNull_(configFile: File): T? {
         this.configFile = configFile
         var localConfig: T? = null
         if (configFile.canRead()) {
@@ -129,37 +148,31 @@ open class Config<T: Any>(
         return localConfig
     }
 
-    /**
-     * Loads a configuration from a string, if possible.
-     *
-     * ```
-     * commandline > system property > environment variable > input string
-     * ```
-     */
-    fun loadOrNull(configText: String): T? {
+    private fun loadOrNull_(configText: String): T? {
         this.configFile = null
-        return try {
+        val config = try {
             // we want to make ALL NEW configs, each referencing a DIFFERENT object
             moshi.fromJson(configText)!!
         } catch (ignored: Exception) {
             // there was a problem parsing the config, so we will use null to signify that
             null
         }
+
+        return config
     }
 
-    private fun loadMoshi(localConfig: T?, createDefaultObject: () -> T): T {
-        var localConfig = localConfig
+    private fun loadDefaults(localConfig: T?, createDefaultObject: () -> T): T {
         val generateLocalConfig = localConfig == null
-        if (generateLocalConfig) {
-            localConfig = createDefaultObject()
-            configMap = createConfigMap(localConfig)
+        originalConfig = if (generateLocalConfig) {
+            createDefaultObject()
+        } else {
+            localConfig!!
         }
 
         // now, we make a COPY of the original values from the file (so when saving, we know what the overloaded values are and not save them)
-        originalConfig = localConfig!!
+
         // create the map that knows what members have what values
         originalConfigMap = createConfigMap(originalConfig)
-
 
         // let's also make a deep copy.
         config = moshi.fromJson(moshi.toJson(originalConfig))!!
@@ -169,6 +182,24 @@ open class Config<T: Any>(
         if (generateLocalConfig) {
             save()
         }
+
+        return config
+    }
+
+    private fun loadDefaultsOrNull(localConfig: T?): T? {
+        if (localConfig == null) {
+            return null
+        }
+
+        // now, we make a COPY of the original values from the file (so when saving, we know what the overloaded values are and not save them)
+
+        // create the map that knows what members have what values
+        originalConfigMap = createConfigMap(originalConfig)
+
+        // let's also make a deep copy.
+        config = moshi.fromJson(moshi.toJson(originalConfig))!!
+        // create the map that knows what members have what values
+        configMap = createConfigMap(config)
 
         return config
     }
