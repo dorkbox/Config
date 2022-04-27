@@ -54,7 +54,7 @@ open class Config<T: Any>(
         /**
          * Gets the version number.
          */
-        const val version = "1.5"
+        const val version = "1.6"
 
         init {
             // Add this project to the updates system, which verifies this class + UUID + version information
@@ -224,13 +224,26 @@ open class Config<T: Any>(
         return this.arguments
     }
 
+    /**
+     * process the arguments, and if applicable perform a `get` or `set` operation
+     */
+    fun process(arguments: Collection<String>, onSaveAction: () -> Unit): List<String> {
+        this.arguments.addAll(arguments)
+
+        // now we have to see if there are any OVERLOADED properties
+        manageOverloadProperties()
+        manageGetAndSet(onSaveAction)
+
+        // this contains a "cleaned" set of arguments that excludes overloaded args.
+        return this.arguments
+    }
 
     private fun createConfigMap(config: Any): Map<String, ConfigProp> {
         // this creates an EASY-to-use map of all arguments we have
         val argumentMap = mutableMapOf<String, ConfigProp>()
 
         val kClass = config::class
-        require(kClass.hasAnnotation<JsonClass>()) { "Cannot parse configuraion if it is not annotated with @JsonClass"}
+        require(kClass.hasAnnotation<JsonClass>()) { "Cannot parse configuration if it is not annotated with @JsonClass"}
 
         // get all the members of this class.
         for (member in kClass.declaredMemberProperties) {
