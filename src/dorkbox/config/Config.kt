@@ -191,6 +191,8 @@ open class Config<T: Any>(
             return null
         }
 
+        originalConfig = localConfig
+
         // now, we make a COPY of the original values from the file (so when saving, we know what the overloaded values are and not save them)
 
         // create the map that knows what members have what values
