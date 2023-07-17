@@ -1,11 +1,12 @@
 module dorkbox.config {
     exports dorkbox.config;
 
-    requires java.base;
-    requires moshi;
-    requires kotlin.stdlib;
-    requires dorkbox.updates;
-    requires kotlin.reflect;
-    requires dorkbox.os;
-    requires kotlin.logging.jvm;
+    requires transitive dorkbox.updates;
+    requires transitive dorkbox.os;
+
+    requires transitive kotlin.reflect;
+    requires transitive kotlin.logging.jvm;
+    requires transitive kotlin.stdlib;
+
+    requires transitive com.squareup.moshi;
 }

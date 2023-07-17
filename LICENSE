@@ -1,21 +1,27 @@
  - Config - Configuration properties that can be defined via the CLI, system properties, environment variables, or file.
    [The Apache Software License, Version 2.0]
    https://git.dorkbox.com/dorkbox/Config
-   Copyright 2022
+   Copyright 2023
      Dorkbox LLC
 
    Extra license information
      - kotlin-logging - Lightweight logging framework for Kotlin
        [The Apache Software License, Version 2.0]
        https://github.com/MicroUtils/kotlin-logging
-       Copyright 2022
+       Copyright 2023
          Ohad Shai
 
      - SLF4J - Simple facade or abstraction for various logging frameworks
        [MIT License]
-       http://www.slf4j.org
-       Copyright 2022
+       https://www.slf4j.org
+       Copyright 2023
          QOS.ch
+
+     - Moshi - A modern JSON library for Kotlin and Java
+       [The Apache Software License, Version 2.0]
+       https://github.com/square/moshi
+       Copyright 2023
+         Square, Inc
 
      - Kotlin - 
        [The Apache Software License, Version 2.0]
@@ -24,12 +30,6 @@
          JetBrains s.r.o. and Kotlin Programming Language contributors
        Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
        See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
-
-     - Moshi - A modern JSON library for Kotlin and Java
-       [The Apache Software License, Version 2.0]
-       https://github.com/square/moshi
-       Copyright 2022
-         Square, Inc
 
      - Updates - Software Update Management
        [The Apache Software License, Version 2.0]
@@ -49,7 +49,7 @@
      - OS - Information about the system, Java runtime, OS, Window Manager, and Desktop Environment.
        [The Apache Software License, Version 2.0]
        https://git.dorkbox.com/dorkbox/OS
-       Copyright 2022
+       Copyright 2023
          Dorkbox LLC
 
        Extra license information

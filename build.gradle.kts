@@ -26,12 +26,12 @@ gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS   // always show th
 
 
 plugins {
-    id("com.dorkbox.GradleUtils") version "2.16"
-    id("com.dorkbox.Licensing") version "2.12"
-    id("com.dorkbox.VersionUpdate") version "2.4"
-    id("com.dorkbox.GradlePublish") version "1.12"
+    id("com.dorkbox.GradleUtils") version "3.17"
+    id("com.dorkbox.Licensing") version "2.24"
+    id("com.dorkbox.VersionUpdate") version "2.8"
+    id("com.dorkbox.GradlePublish") version "1.18"
 
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.8.0"
 }
 
 object Extras {
@@ -62,7 +62,7 @@ GradleUtils.compileConfiguration(JavaVersion.VERSION_1_8) {
         "-Xopt-in=kotlin.RequiresOptIn"
     )
 }
-//GradleUtils.jpms(JavaVersion.VERSION_1_9) moshi doesn't support JPMS yet
+//GradleUtils.jpms(JavaVersion.VERSION_1_9)// moshi doesn't support JPMS yet. See: https://github.com/square/moshi/issues/1160
 
 
 licensing {
@@ -90,9 +90,9 @@ tasks.jar.get().apply {
 
 dependencies {
     api("com.dorkbox:Updates:1.1")
-    api("com.dorkbox:OS:1.0")
+    api("com.dorkbox:OS:1.6")
 
-    val moshiVer = "1.13.0"
+    val moshiVer = "1.15.0"
 
     // For JSON serialization
     compileOnly("com.squareup.moshi:moshi:$moshiVer")
