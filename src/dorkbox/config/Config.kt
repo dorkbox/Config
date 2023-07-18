@@ -83,6 +83,17 @@ open class Config<T: Any>(
     private val originalOverloadedProperties = mutableMapOf<String, Any>()
 
     /**
+     * Initializes a default configuration
+     *
+     * ```
+     * commandline > system property > environment variable > config file
+     * ```
+     */
+    fun init(createDefaultObject: () -> T): T {
+        return loadDefaults(null, createDefaultObject)
+    }
+
+    /**
      * Loads a configuration from disk, if possible.
      *
      * ```
@@ -246,7 +257,7 @@ open class Config<T: Any>(
     /**
      * process the arguments, and if applicable perform a `get` or `set` operation
      */
-    fun process(arguments: Array<String>, onSaveAction: () -> Unit): List<String> {
+    fun process(arguments: Array<String>, onSaveAction: (() -> Unit)? = null): List<String> {
         this.arguments.addAll(arguments)
 
         // now we have to see if there are any OVERLOADED properties
@@ -260,7 +271,7 @@ open class Config<T: Any>(
     /**
      * process the arguments, and if applicable perform a `get` or `set` operation
      */
-    fun process(arguments: Collection<String>, onSaveAction: () -> Unit): List<String> {
+    fun process(arguments: Collection<String>, onSaveAction: (() -> Unit)? = null): List<String> {
         this.arguments.addAll(arguments)
 
         // now we have to see if there are any OVERLOADED properties
@@ -348,7 +359,7 @@ open class Config<T: Any>(
     /**
      * Allows the ability to `get` or `set` configuration properties. Will call System.exit() if a get/set was done
      */
-    private fun manageGetAndSet(onSaveAction: () -> Unit) {
+    private fun manageGetAndSet(onSaveAction: (() -> Unit)?) {
         if ((arguments.isEmpty())) {
             // nothing to do
             return
@@ -387,7 +398,9 @@ open class Config<T: Any>(
                 val oldValue = prop.set(valueToSet)
 
                 // we ALWAYS want to re-save this file back
-                onSaveAction()
+                if (onSaveAction != null) {
+                    onSaveAction()
+                }
 
                 logAndExit(oldValue.toString())
             } else {
