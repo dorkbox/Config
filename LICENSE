@@ -1,4 +1,4 @@
- - Config - Configuration management for properties that can be defined via the CLI, system properties, environment variables, or JSON file.
+ - Config - CLI, system properties, environment variables, or JSON text/file input processing.
    [The Apache Software License, Version 2.0]
    https://git.dorkbox.com/dorkbox/Config
    Copyright 2023

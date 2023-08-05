@@ -36,7 +36,7 @@ plugins {
 
 object Extras {
     // set for the project
-    const val description = "Configuration management for properties that can be defined via the CLI, system properties, environment variables, or JSON file."
+    const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
     const val version = "2.0"
 
