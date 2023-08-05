@@ -39,8 +39,8 @@ class Test {
         Assert.assertFalse(conf.server)
         Assert.assertFalse(conf.client)
 
-        Assert.assertEquals("{ip_address:127.0.0.1,server:false,client:false,nested:[{iceCream:false,potatoes:true}]}", config.originalJson())
-        Assert.assertEquals("{ip_address:1.2.3.4,server:false,client:false,nested:[{iceCream:false,potatoes:true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
     }
 
     @Test
@@ -61,8 +61,8 @@ class Test {
         Assert.assertTrue(conf.nested[0].iceCream)
 
 
-        Assert.assertEquals("{ip_address:127.0.0.1,server:false,client:false,nested:[{iceCream:false,potatoes:true}]}", config.originalJson())
-        Assert.assertEquals("{ip_address:1.2.3.4,server:false,client:false,nested:[{iceCream:true,potatoes:true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
 
 
         config.loadAndProcess("{ip_address:127.0.0.1,server:true,client:true}")
@@ -71,8 +71,8 @@ class Test {
         Assert.assertTrue(conf.server)
         Assert.assertTrue(conf.client)
 
-        Assert.assertEquals("{ip_address:127.0.0.1,server:true,client:true,nested:[{iceCream:false,potatoes:true}]}", config.originalJson())
-        Assert.assertEquals("{ip_address:1.2.3.4,server:true,client:true,nested:[{iceCream:true,potatoes:true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
     }
 
     @Test
@@ -92,8 +92,8 @@ class Test {
         Assert.assertTrue(conf.server)
         Assert.assertFalse(conf.client)
 
-        Assert.assertEquals("{ip_address:127.0.0.1,server:false,client:false,nested:[{iceCream:false,potatoes:true}]}", config.originalJson())
-        Assert.assertEquals("{ip_address:11.12.13.14,server:true,client:false,nested:[{iceCream:false,potatoes:true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"11.12.13.14\",\"server\":true,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
 
         System.clearProperty("server")
     }
