@@ -1,28 +1,10 @@
- - Config - Configuration properties that can be defined via the CLI, system properties, environment variables, or file.
+ - Config - Configuration management for properties that can be defined via the CLI, system properties, environment variables, or JSON file.
    [The Apache Software License, Version 2.0]
    https://git.dorkbox.com/dorkbox/Config
    Copyright 2023
      Dorkbox LLC
 
    Extra license information
-     - kotlin-logging - Lightweight logging framework for Kotlin
-       [The Apache Software License, Version 2.0]
-       https://github.com/MicroUtils/kotlin-logging
-       Copyright 2023
-         Ohad Shai
-
-     - SLF4J - Simple facade or abstraction for various logging frameworks
-       [MIT License]
-       https://www.slf4j.org
-       Copyright 2023
-         QOS.ch
-
-     - Moshi - A modern JSON library for Kotlin and Java
-       [The Apache Software License, Version 2.0]
-       https://github.com/square/moshi
-       Copyright 2023
-         Square, Inc
-
      - Kotlin - 
        [The Apache Software License, Version 2.0]
        https://github.com/JetBrains/kotlin
@@ -31,13 +13,26 @@
        Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
        See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
 
-     - Updates - Software Update Management
+     - SLF4J - Simple facade or abstraction for various logging frameworks
+       [MIT License]
+       https://www.slf4j.org
+       Copyright 2023
+         QOS.ch
+
+     - Json - Lightweight Kotlin/JSON serialization
        [The Apache Software License, Version 2.0]
-       https://git.dorkbox.com/dorkbox/Updates
-       Copyright 2021
+       https://git.dorkbox.com/dorkbox/Json
+       Copyright 2023
          Dorkbox LLC
 
        Extra license information
+         - LibGDX Json Utils - Java object graphs, to and from JSON automatically
+           [The Apache Software License, Version 2.0]
+           https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils
+           Copyright 2011
+             Mario Zechner
+             Nathan Sweet
+
          - Kotlin - 
            [The Apache Software License, Version 2.0]
            https://github.com/JetBrains/kotlin
@@ -45,6 +40,94 @@
              JetBrains s.r.o. and Kotlin Programming Language contributors
            Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
            See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
+
+         - Updates - Software Update Management
+           [The Apache Software License, Version 2.0]
+           https://git.dorkbox.com/dorkbox/Updates
+           Copyright 2021
+             Dorkbox LLC
+
+           Extra license information
+             - Kotlin - 
+               [The Apache Software License, Version 2.0]
+               https://github.com/JetBrains/kotlin
+               Copyright 2020
+                 JetBrains s.r.o. and Kotlin Programming Language contributors
+               Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
+               See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
+
+         - Collections - Collection types and utilities to enhance the default collections.
+           [The Apache Software License, Version 2.0]
+           https://git.dorkbox.com/dorkbox/Collections
+           Copyright 2023
+             Dorkbox LLC
+
+           Extra license information
+             - Bias, BinarySearch - 
+               [MIT License]
+               https://git.dorkbox.com/dorkbox/Collections
+               https://github.com/timboudreau/util
+               Copyright 2013
+                 Tim Boudreau
+
+             - ConcurrentEntry - 
+               [The Apache Software License, Version 2.0]
+               https://git.dorkbox.com/dorkbox/Collections
+               Copyright 2016
+                 bennidi
+                 dorkbox
+
+             - Collection Utilities (Array, ArrayMap, BooleanArray, ByteArray, CharArray, FloatArray, IdentityMap, IntArray, IntFloatMap, IntIntMap, IntMap, IntSet, LongArray, LongMap, ObjectFloatMap, ObjectIntMap, ObjectMap, ObjectSet, OrderedMap, OrderedSet) - 
+               [The Apache Software License, Version 2.0]
+               https://git.dorkbox.com/dorkbox/Collections
+               https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils
+               Copyright 2011
+                 LibGDX
+                 Mario Zechner (badlogicgames@gmail.com)
+                 Nathan Sweet (nathan.sweet@gmail.com)
+
+             - Predicate - 
+               [The Apache Software License, Version 2.0]
+               https://git.dorkbox.com/dorkbox/Collections
+               https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils
+               Copyright 2011
+                 LibGDX
+                 Mario Zechner (badlogicgames@gmail.com)
+                 Nathan Sweet (nathan.sweet@gmail.com)
+                 xoppa
+
+             - Select, QuickSelect - 
+               [The Apache Software License, Version 2.0]
+               https://git.dorkbox.com/dorkbox/Collections
+               https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils
+               Copyright 2011
+                 LibGDX
+                 Mario Zechner (badlogicgames@gmail.com)
+                 Nathan Sweet (nathan.sweet@gmail.com)
+                 Jon Renner
+
+             - Kotlin - 
+               [The Apache Software License, Version 2.0]
+               https://github.com/JetBrains/kotlin
+               Copyright 2020
+                 JetBrains s.r.o. and Kotlin Programming Language contributors
+               Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
+               See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
+
+             - Updates - Software Update Management
+               [The Apache Software License, Version 2.0]
+               https://git.dorkbox.com/dorkbox/Updates
+               Copyright 2021
+                 Dorkbox LLC
+
+               Extra license information
+                 - Kotlin - 
+                   [The Apache Software License, Version 2.0]
+                   https://github.com/JetBrains/kotlin
+                   Copyright 2020
+                     JetBrains s.r.o. and Kotlin Programming Language contributors
+                   Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
+                   See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
 
      - OS - Information about the system, Java runtime, OS, Window Manager, and Desktop Environment.
        [The Apache Software License, Version 2.0]
@@ -75,3 +158,18 @@
                  JetBrains s.r.o. and Kotlin Programming Language contributors
                Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
                See: https://github.com/JetBrains/kotlin/blob/master/license/README.md
+
+     - Updates - Software Update Management
+       [The Apache Software License, Version 2.0]
+       https://git.dorkbox.com/dorkbox/Updates
+       Copyright 2021
+         Dorkbox LLC
+
+       Extra license information
+         - Kotlin - 
+           [The Apache Software License, Version 2.0]
+           https://github.com/JetBrains/kotlin
+           Copyright 2020
+             JetBrains s.r.o. and Kotlin Programming Language contributors
+           Kotlin Compiler, Test Data+Libraries, and Tools repository contain third-party code, to which different licenses may apply
+           See: https://github.com/JetBrains/kotlin/blob/master/license/README.md

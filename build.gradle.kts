@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 dorkbox, llc
+ * Copyright 2023 dorkbox, llc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS   // always show th
 
 plugins {
     id("com.dorkbox.GradleUtils") version "3.17"
-    id("com.dorkbox.Licensing") version "2.24"
+    id("com.dorkbox.Licensing") version "2.25"
     id("com.dorkbox.VersionUpdate") version "2.8"
     id("com.dorkbox.GradlePublish") version "1.18"
 
@@ -36,9 +36,9 @@ plugins {
 
 object Extras {
     // set for the project
-    const val description = "Configuration properties that can be defined via the CLI, system properties, environment variables, or file."
+    const val description = "Configuration management for properties that can be defined via the CLI, system properties, environment variables, or JSON file."
     const val group = "com.dorkbox"
-    const val version = "1.9"
+    const val version = "2.0"
 
     // set as project.ext
     const val name = "Config"
@@ -55,14 +55,8 @@ object Extras {
 ///////////////////////////////
 GradleUtils.load("$projectDir/../../gradle.properties", Extras)
 GradleUtils.defaults()
-GradleUtils.compileConfiguration(JavaVersion.VERSION_1_8) {
-    // see: https://kotlinlang.org/docs/reference/using-gradle.html
-    freeCompilerArgs = listOf(
-        // enable the use of experimental methods
-        "-Xopt-in=kotlin.RequiresOptIn"
-    )
-}
-//GradleUtils.jpms(JavaVersion.VERSION_1_9)// moshi doesn't support JPMS yet. See: https://github.com/square/moshi/issues/1160
+GradleUtils.compileConfiguration(JavaVersion.VERSION_1_8)
+GradleUtils.jpms(JavaVersion.VERSION_1_9)
 
 
 licensing {
@@ -89,18 +83,16 @@ tasks.jar.get().apply {
 }
 
 dependencies {
-    api("com.dorkbox:Updates:1.1")
+    api(kotlin("reflect"))
+
+    api("com.dorkbox:Json:1.0")
     api("com.dorkbox:OS:1.6")
+    api("com.dorkbox:Updates:1.1")
 
-    val moshiVer = "1.15.0"
-
-    // For JSON serialization
-    compileOnly("com.squareup.moshi:moshi:$moshiVer")
-    compileOnly("com.squareup.moshi:moshi-kotlin:$moshiVer")
-
-    // https://github.com/MicroUtils/kotlin-logging
-    api("io.github.microutils:kotlin-logging:2.1.21")
     api("org.slf4j:slf4j-api:1.8.0-beta4")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("ch.qos.logback:logback-classic:1.4.5")
 }
 
 publishToSonatype {
