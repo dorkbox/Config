@@ -85,7 +85,7 @@ tasks.jar.get().apply {
 dependencies {
     api(kotlin("reflect"))
 
-    api("com.dorkbox:Json:1.0")
+    api("com.dorkbox:Json:1.2")
     api("com.dorkbox:OS:1.6")
     api("com.dorkbox:Updates:1.1")
 
