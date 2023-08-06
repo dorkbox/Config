@@ -34,7 +34,7 @@ Maven Info
     <dependency>
       <groupId>com.dorkbox</groupId>
       <artifactId>Config</artifactId>
-      <version>2.0</version>
+      <version>2.1</version>
     </dependency>
 </dependencies>
 ```
@@ -44,7 +44,7 @@ Gradle Info
 ```
 dependencies {
     ...
-    implementation("com.dorkbox:Config:2.0")
+    implementation("com.dorkbox:Config:2.1")
 }
 ```
 
