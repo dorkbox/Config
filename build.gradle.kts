@@ -46,8 +46,6 @@ object Extras {
     const val vendor = "Dorkbox LLC"
     const val vendorUrl = "https://dorkbox.com"
     const val url = "https://git.dorkbox.com/dorkbox/Config"
-
-    val buildDate = Instant.now().toString()
 }
 
 ///////////////////////////////
@@ -77,7 +75,7 @@ tasks.jar.get().apply {
         attributes["Specification-Vendor"] = Extras.vendor
 
         attributes["Implementation-Title"] = "${Extras.group}.${Extras.id}"
-        attributes["Implementation-Version"] = Extras.buildDate
+        attributes["Implementation-Version"] = GradleUtils.now()
         attributes["Implementation-Vendor"] = Extras.vendor
     }
 }
@@ -89,7 +87,7 @@ dependencies {
     api("com.dorkbox:OS:1.6")
     api("com.dorkbox:Updates:1.1")
 
-    api("org.slf4j:slf4j-api:1.8.0-beta4")
+    api("org.slf4j:slf4j-api:2.0.7")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("ch.qos.logback:logback-classic:1.4.5")
