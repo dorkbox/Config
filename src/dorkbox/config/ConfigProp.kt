@@ -30,21 +30,11 @@ data class ConfigProp(val parent: Any, val member: KProperty<Any>) {
 
     @Synchronized
     fun get(): Any {
-        return get(parent)
-    }
-
-    @Synchronized
-    fun get(parent: Any): Any {
         return member.getter.call(parent)
     }
 
     @Synchronized
     fun set(value: Any) {
-        return set(parent, value)
-    }
-
-    @Synchronized
-    fun set(parent: Any, value: Any) {
         require(member is KMutableProperty<*>) { "Cannot set the immutable type ${member.returnType.jvmErasure}" }
 
         member.setter.call(parent, value)
