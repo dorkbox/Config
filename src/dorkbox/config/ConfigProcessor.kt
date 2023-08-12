@@ -16,7 +16,6 @@
 
 package dorkbox.config
 
-import dorkbox.json.Alias
 import dorkbox.json.Json
 import dorkbox.json.Json.Companion.isBoolean
 import dorkbox.json.Json.Companion.isByte
@@ -349,11 +348,23 @@ class ConfigProcessor<T : Any>
      */
     @Synchronized
     fun loadAndProcess(configString: String): ConfigProcessor<T> {
-        return if (load(configString)) {
-            process()
-        } else {
-            this
+        val configObject =
+            try {
+                if (configString.isNotBlank()) {
+                    json.fromJson(objectType.java, configString)
+                } else {
+                    null
+                }
+            } catch (ignored: Exception) {
+                // there was a problem parsing the config
+                null
+            }
+
+        if (configObject == null) {
+            return this
         }
+
+        return process()
     }
 
     /**
@@ -363,11 +374,34 @@ class ConfigProcessor<T : Any>
      */
     @Synchronized
     fun loadAndProcess(configFile: File): ConfigProcessor<T> {
-        return if (load(configFile)) {
-            process()
-        } else {
-            this
+        val configObject =
+            if (configFile.canRead()) {
+                // get the text from the file
+                val fileContents = configFile.readText(Charsets.UTF_8)
+                if (fileContents.isNotEmpty()) {
+                    try {
+                        json.fromJson(objectType.java, fileContents)
+                    }
+                    catch (ignored: Exception) {
+                        // there was a problem parsing the config
+                        null
+                    }
+                }
+                else {
+                    null
+                }
+            }
+            else {
+                null
+            }
+
+        if (configObject == null) {
+            return this
         }
+
+        this.configFile = configFile
+
+        return process()
     }
 
     /**
