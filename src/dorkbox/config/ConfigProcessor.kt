@@ -154,7 +154,12 @@ class ConfigProcessor<T : Any>
                 return
             }
 
-            var jsonName = (field.javaField?.annotations?.filterIsInstance<Alias>()?.firstOrNull()?.alias ?: field.name)
+            val annotation = field.javaField?.annotations?.filterIsInstance<dorkbox.json.annotation.Json>()?.firstOrNull()
+            if (annotation?.ignore == true) {
+                return
+            }
+
+            var jsonName = (annotation?.name ?: field.name)
             jsonName = when {
                 prefix.isEmpty() -> jsonName
                 else             ->"$prefix.$jsonName"
@@ -176,7 +181,9 @@ class ConfigProcessor<T : Any>
                 isByte(type) ||
                 isChar(type) ||
 
-                Enum::class.java.isAssignableFrom(type)) {
+                Enum::class.java.isAssignableFrom(type) ||
+                annotation != null) // if there is an annotation on the field, we add it as the object!
+            {
 
                 argMap[jsonName] = ConfigProp(parentObj, field)
             } else if (type.isArray) {
