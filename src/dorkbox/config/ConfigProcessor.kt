@@ -356,6 +356,16 @@ class ConfigProcessor<T : Any>
         return this
     }
 
+    /**
+     * Specify the file to save to (useful in the case where the file saved to and the file loaded from are different)
+     */
+    @Synchronized
+    fun saveFile(saveFileName: String): ConfigProcessor<T> {
+        this.saveFile = File(saveFileName)
+        System.err.println(saveFile!!.absolutePath)
+        return this
+    }
+
 
     /**
      * Specify the save logic. By default, will attempt to save to the saveFile (if available), then will attempt
@@ -822,7 +832,13 @@ class ConfigProcessor<T : Any>
     fun save(): String {
         val configToString = originalJson()
 
-        saveFile ?: configFile ?.writeText(configToString, Charsets.UTF_8)
+        if (saveFile != null) {
+            saveFile!!.writeText(configToString, Charsets.UTF_8)
+        }
+        else if (configFile != null) {
+            configFile!!.writeText(configToString, Charsets.UTF_8)
+        }
+
         return configToString
     }
 
@@ -835,7 +851,13 @@ class ConfigProcessor<T : Any>
     fun savePretty(): String {
         val configToString = json.prettyPrint(originalJson())
 
-        saveFile ?: configFile ?.writeText(configToString, Charsets.UTF_8)
+        if (saveFile != null) {
+            saveFile!!.writeText(configToString, Charsets.UTF_8)
+        }
+        else if (configFile != null) {
+            configFile!!.writeText(configToString, Charsets.UTF_8)
+        }
+
         return configToString
     }
 
