@@ -140,13 +140,13 @@ class Test {
         Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
 
 
-        config.loadAndProcess("{ip_address:127.0.0.1,server:true,client:true}")
+        config.loadAndProcess("{ip_address:0.0.0.0,server:true,client:true}")
 
         Assert.assertTrue(conf.ip == "1.2.3.4")
         Assert.assertTrue(conf.server)
         Assert.assertTrue(conf.client)
 
-        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"0.0.0.0\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
         Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
     }
 
@@ -174,14 +174,14 @@ class Test {
 
 
         // since we did not PROCESS the cli arguments again -- it means that the original has not been overloaded. To consider overloading stuff, process() must be called
-        config.load("{ip_address:127.0.0.1,server:true,client:true}")
+        config.load("{ip_address:0.0.0.0,server:true,client:true}")
 
-        Assert.assertTrue(conf.ip == "127.0.0.1")
+        Assert.assertTrue(conf.ip == "0.0.0.0")
         Assert.assertTrue(conf.server)
         Assert.assertTrue(conf.client)
 
-        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
-        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"0.0.0.0\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"0.0.0.0\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
     }
 
     class ListConf {
