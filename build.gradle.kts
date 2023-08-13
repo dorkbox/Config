@@ -38,7 +38,7 @@ object Extras {
     // set for the project
     const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
-    const val version = "2.2"
+    const val version = "2.3"
 
     // set as project.ext
     const val name = "Config"
