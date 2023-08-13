@@ -96,6 +96,29 @@ class Test {
     }
 
     @Test
+    fun sysPropTest() {
+        val conf = Conf()
+
+        Assert.assertTrue(conf.ip == "127.0.0.1")
+
+        System.setProperty("server", "true")
+        val config = ConfigProcessor(conf)
+            .envPrefix("")
+            .cliArguments(arrayOf("ip_address=11.12.13.14"))
+            .process()
+
+
+        Assert.assertTrue(conf.ip == "11.12.13.14")
+        Assert.assertTrue(conf.server)
+        Assert.assertFalse(conf.client)
+
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"11.12.13.14\",\"server\":true,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
+
+        System.clearProperty("server")
+    }
+
+    @Test
     fun updateTest() {
         val conf = Conf()
 
@@ -127,27 +150,38 @@ class Test {
         Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
     }
 
+
     @Test
-    fun sysPropTest() {
+    fun update2Test() {
         val conf = Conf()
 
         Assert.assertTrue(conf.ip == "127.0.0.1")
 
-        System.setProperty("server", "true")
         val config = ConfigProcessor(conf)
             .envPrefix("")
-            .cliArguments(arrayOf("ip_address=11.12.13.14"))
+            .cliArguments(arrayOf("ip_address=1.2.3.4", "nested[0].iceCream"))
             .process()
 
 
-        Assert.assertTrue(conf.ip == "11.12.13.14")
-        Assert.assertTrue(conf.server)
+        Assert.assertTrue(conf.ip == "1.2.3.4")
+        Assert.assertFalse(conf.server)
         Assert.assertFalse(conf.client)
+        Assert.assertTrue(conf.nested[0].iceCream)
+
 
         Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
-        Assert.assertEquals("{\"ip_address\":\"11.12.13.14\",\"server\":true,\"client\":false,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
+        Assert.assertEquals("{\"ip_address\":\"1.2.3.4\",\"server\":false,\"client\":false,\"nested\":[{\"iceCream\":true,\"potatoes\":true}]}", config.json())
 
-        System.clearProperty("server")
+
+        // since we did not PROCESS the cli arguments again -- it means that the original has not been overloaded. To consider overloading stuff, process() must be called
+        config.load("{ip_address:127.0.0.1,server:true,client:true}")
+
+        Assert.assertTrue(conf.ip == "127.0.0.1")
+        Assert.assertTrue(conf.server)
+        Assert.assertTrue(conf.client)
+
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.originalJson())
+        Assert.assertEquals("{\"ip_address\":\"127.0.0.1\",\"server\":true,\"client\":true,\"nested\":[{\"iceCream\":false,\"potatoes\":true}]}", config.json())
     }
 
     class ListConf {
