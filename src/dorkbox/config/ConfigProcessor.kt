@@ -30,15 +30,18 @@ import dorkbox.json.OutputType
 import dorkbox.os.OS
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.lang.reflect.Modifier
 import java.util.*
+import kotlin.collections.AbstractList
+import kotlin.collections.ArrayList
+import kotlin.math.max
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaField
-import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
@@ -135,7 +138,16 @@ class ConfigProcessor<T : Any>
             // get all the members of this class.
             for (member in objectType.declaredMemberProperties) {
                 @Suppress("UNCHECKED_CAST")
-                assignFieldsToMap(argumentMap, member as KProperty<Any>, config, member.getter.call(config)!!, "", -1)
+                assignFieldsToMap(
+                    argMap = argumentMap,
+                    field = member as KProperty<Any>,
+                    parentConf = null,
+                    parentObj = config,
+                    obj = member.getter.call(config)!!,
+                    prefix = "",
+                    arrayName = "",
+                    index = -1
+                )
             }
 
             return argumentMap
@@ -143,14 +155,18 @@ class ConfigProcessor<T : Any>
 
         // the class is treated as lowercase, but the VALUE of properties is treated as case-sensitive
         private fun assignFieldsToMap(argMap: MutableMap<String, ConfigProp>, field: KProperty<Any>,
-                                      parentObj: Any, obj: Any,
-                                      prefix: String, index: Int = -1)
+                                      parentConf: ConfigProp?, parentObj: Any, obj: Any,
+                                      prefix: String, arrayName: String, index: Int = -1)
 
         {
             val javaField = field.javaField!!
             if (Modifier.isTransient(javaField.modifiers)) {
                 // ignore transient fields!
                 return
+            }
+
+            require(obj::class.java.typeName != "java.util.Arrays\$ArrayList") {
+                "Cannot modify an effectively immutable type! This is likely listOf() insteadof mutableListOf(), or Arrays.toList() insteadof ArrayList()"
             }
 
             val annotation = field.javaField?.annotations?.filterIsInstance<dorkbox.json.annotation.Json>()?.firstOrNull()
@@ -168,8 +184,9 @@ class ConfigProcessor<T : Any>
                 jsonName += "[$index]"
             }
 
-            val type = obj::class.java
+            val prop = ConfigProp(parentConf, parentObj, field, arrayName, index)
 
+            val type = obj::class.java
             if (isString(type) ||
                 isInt(type) ||
                 isBoolean(type) ||
@@ -180,11 +197,10 @@ class ConfigProcessor<T : Any>
                 isByte(type) ||
                 isChar(type) ||
 
-                Enum::class.java.isAssignableFrom(type) ||
-                annotation != null) // if there is an annotation on the field, we add it as the object!
+                Enum::class.java.isAssignableFrom(type))
             {
 
-                argMap[jsonName] = ConfigProp(parentObj, field)
+                argMap[jsonName] = prop
             } else if (type.isArray) {
                 // iterate over the array, but assign the index with the name.
                 @Suppress("UNCHECKED_CAST")
@@ -193,9 +209,11 @@ class ConfigProcessor<T : Any>
                     assignFieldsToMap(
                         argMap = argMap,
                         field = field,
+                        parentConf = prop,
                         parentObj = obj,
                         obj = any,
                         prefix = prefix,
+                        arrayName = jsonName,
                         index = i)
                 }
             } else if (Collection::class.java.isAssignableFrom(type)) {
@@ -206,11 +224,17 @@ class ConfigProcessor<T : Any>
                     assignFieldsToMap(
                         argMap = argMap,
                         field = field,
+                        parentConf = prop,
                         parentObj = obj,
                         obj = any,
                         prefix = prefix,
+                        arrayName = jsonName,
                         index = i)
                 }
+            } else if (annotation != null) {
+                // if there is an annotation on the field, we add it as the object!
+                // (BUT ONLY if it's not a collection or array!)
+                argMap[jsonName] = prop
             } else {
                 val kClass = obj::class
                 // get all the members of this class.
@@ -220,9 +244,11 @@ class ConfigProcessor<T : Any>
                         assignFieldsToMap(
                             argMap = argMap,
                             field = member as KProperty<Any>,
+                            parentConf = prop,
                             parentObj = obj,
                             obj = member.getter.call(obj)!!,
                             prefix = jsonName,
+                            arrayName = "",
                             index = -1
                         )
                     }
@@ -282,8 +308,8 @@ class ConfigProcessor<T : Any>
     // DEEP COPY of the original values from the file, so when saving, we know what the
     // overridden values are and can skip saving them
     // NOTE: overridden values are set via CLI/Sys/Env!!
-    private lateinit var configCopy: T
-    private lateinit var configMapCopy: Map<String, ConfigProp>
+    private lateinit var origCopyConfig: T
+    private lateinit var origCopyConfigMap: Map<String, ConfigProp>
 
 
     init {
@@ -364,7 +390,10 @@ class ConfigProcessor<T : Any>
             return this
         }
 
-        return process()
+        this.configString = configString
+        load(configObject)
+
+        return process(configObject)
     }
 
     /**
@@ -400,8 +429,9 @@ class ConfigProcessor<T : Any>
         }
 
         this.configFile = configFile
+        load(configObject)
 
-        return process()
+        return process(configObject)
     }
 
     /**
@@ -478,8 +508,32 @@ class ConfigProcessor<T : Any>
         // if we are invoked multiple times, then we might "undo" the overloaded value, but then "redo" it later.
         val incomingDataConfigMap = createConfigMap(configObject, objectType)
         incomingDataConfigMap.forEach { (k,v) ->
-            configMap[k]!!.set(v.get())
+            // when setting a district array of length > 1, this is causing errors (since the "default" has no length, and we do.
+
+            // if we are an array/list/object -- then we REPLACE it (not set an element of it at a specific spot)
+            val current = configMap[k]
+            if (current != null) {
+                current.set(v.get())
+            } else {
+                configMap as MutableMap
+                configMap.put(k, v)
+            }
         }
+    }
+
+    /**
+     * Processes and populates the values of the config object, if any
+     */
+    @Synchronized
+    private fun process(configObject: T): ConfigProcessor<T> {
+        if (!processed) {
+            processed = true
+            // only do this once
+            origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
+            origCopyConfigMap = createConfigMap(origCopyConfig, objectType)
+        }
+
+        return postProcess()
     }
 
     /**
@@ -490,8 +544,8 @@ class ConfigProcessor<T : Any>
         if (!processed) {
             processed = true
             // only do this once
-            configCopy = json.fromJson(objectType.java, json.toJson(configObject))!!
-            configMapCopy = createConfigMap(configCopy, objectType)
+            origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
+            origCopyConfigMap = createConfigMap(origCopyConfig, objectType)
         }
 
         // when processing data, the FILE, if present, is always the FIRST to load.
@@ -500,15 +554,18 @@ class ConfigProcessor<T : Any>
         // the string will be used to MODIFY what was set by the FILE (if present),
         configString?.also { load(it) }
 
+        return postProcess()
+    }
 
-
+    @Suppress("UNCHECKED_CAST")
+    private fun postProcess() : ConfigProcessor<T> {
         // this permits a bash/batch/CLI invocation of "get xyz" or "set xyz" so we can be interactive with the CLI
         // if there is no get/set CLI argument, then this does nothing.
         if (manageGetAndSet()) {
             exitProcess(0)
         }
 
-        // always save the config!
+        // always save the LOADED (file/string) config!
         saveLogic()
 
 
@@ -518,6 +575,112 @@ class ConfigProcessor<T : Any>
         // when we are processing the command line arguments, we can be processing them MULTIPLE times, for example if
         // we initially load data from a file, then we load data from a remote server
         val arguments = commandLineArguments.toMutableList()
+
+
+        /**
+         * we have to check to see if we must grow the arrays, because if we ADD an element to an array based on the DEFAULT, meaning
+         * that the default array is size 3, and we add an element at position 4 -- we want to make sure that saving/printing, etc all work properly.
+         */
+        run {
+            val configuredArrays = mutableSetOf("")
+            val newProps = mutableMapOf<String, ConfigProp>()
+            configMap.forEach { (_, prop) ->
+                val returnType = prop.returnType
+
+                if (prop.isSupported()) {
+                    val parent = prop.parent
+
+                    if (parent is Array<*> ||
+                        parent is ArrayList<*> ||
+                        parent is AbstractList<*>
+                    ) {
+
+                        // do we need to GROW the array? (we never shrink, we only grow)
+                        val arrayName = prop.collectionName
+
+                        if (configuredArrays.contains(arrayName)) {
+                            return@forEach
+                        }
+                        configuredArrays.add(arrayName)
+
+                        val foundArgs = commandLineArguments.filter { it.startsWith("$arrayName[") }
+
+                        // if any of the foundArgs INDEX is larger than our array, we have to grow to that size.
+                        val largestIndex: Int
+
+                        val array =
+                            if (parent is Array<*>) {
+                                largestIndex = parent.size - 1
+                                parent
+                            } else if (parent is ArrayList<*>) {
+                                largestIndex = parent.size - 1
+                                parent as ArrayList<Any?>
+                            } else if (parent is MutableList<*>) {
+                                largestIndex = parent.size - 1
+                                parent as MutableList<Any?>
+                            }
+                            else {
+                                throw IllegalArgumentException("Unknown array type: ${parent.javaClass}")
+                            }
+
+
+                        val len = "$arrayName[".length
+                        val cleaned = foundArgs.map { arg ->
+                            val last = arg.indexOfFirst { it == ']' }
+                            arg.substring(len, last).toInt()
+                        }.maxOf { it }
+                        val largest = max(largestIndex, cleaned)
+
+                        if (largest > largestIndex) {
+                            val newObj = if (array is Array<*>) {
+                                // we have to grow (offset by 1 again because of size vs index difference
+                                val newArray = array.copyOf(largest + 1)
+
+                                // now we have to set the index so we can set it later
+                                prop.parentConf!!.set(newArray)
+                                newArray
+                            } else {
+                                array
+                            }
+
+
+                            // we must
+                            // 1) assign what the parent obj is for the array members
+                            // 2) create the new ones
+                            for (index in 0 .. largest) {
+                                val keyName = "$arrayName[$index]"
+                                // prop.member DOES NOT MATTER for arrays BECAUSE we ignore it when get/set!
+                                newProps[keyName] = ConfigProp(prop.parentConf, newObj, prop.member, arrayName, index)
+                            }
+
+                            for (index in largestIndex + 1 .. largest) {
+                                val keyName = "$arrayName[$index]"
+                                // prop.member DOES NOT MATTER for arrays BECAUSE we ignore it when get/set!
+                                val newProp = newProps[keyName]!!
+
+
+                                if (parent is ArrayList<*>) {
+                                    (parent as ArrayList<Any>).add(defaultType(returnType))
+                                }
+                                else if (parent is MutableList<*>) {
+                                    (parent as MutableList<Any>).add(defaultType(returnType))
+                                }
+
+                                // we have to set a default value!!!
+                                newProp.set(defaultType(returnType))
+                                newProp.override = true // cannot use the method because we have to forceSet it!
+                            }
+                        }
+                    }
+                }
+            }
+
+            configMap as MutableMap
+
+            newProps.forEach { (k, v) ->
+                configMap[k] = v
+            }
+        }
 
         /**
          * Overloaded properties can be of the form
@@ -529,7 +692,7 @@ class ConfigProcessor<T : Any>
          *    config.x (absent any value is a 'true')
          */
         configMap.forEach { (arg, prop) ->
-            val returnType = prop.member.returnType.jvmErasure
+            val returnType = prop.returnType
 
             if (prop.isSupported()) {
                 ////
@@ -543,7 +706,7 @@ class ConfigProcessor<T : Any>
 
                     // This will only be saved if different, so we can figure out what the values are on save (and not save
                     // overridden properties, that are unchanged)
-                    prop.setOverload(overriddenValue)
+                    prop.override(overriddenValue)
 
                     arguments.remove(foundArg)
                     return@forEach
@@ -560,7 +723,7 @@ class ConfigProcessor<T : Any>
 
                         // This will only be saved if different, so we can figure out what the values are on save (and not save
                         // overridden properties, that are unchanged)
-                        prop.setOverload(true)
+                        prop.override(true)
 
                         arguments.remove(foundArg)
                         return@forEach
@@ -587,7 +750,7 @@ class ConfigProcessor<T : Any>
 
                     // This will only be saved if different, so we can figure out what the values are on save (and not save
                     // overridden properties, that are unchanged)
-                    prop.setOverload(overriddenValue)
+                    prop.override(overriddenValue)
 
                     return@forEach
                 }
@@ -610,7 +773,7 @@ class ConfigProcessor<T : Any>
                 if (!envProperty.isNullOrEmpty()) {
                     // This will only be saved if different, so we can figure out what the values are on save (and not save
                     // overridden properties, that are unchanged)
-                    prop.setOverload(envProperty)
+                    prop.override(envProperty)
 
                     return@forEach
                 }
@@ -631,14 +794,15 @@ class ConfigProcessor<T : Any>
     @Synchronized
     fun originalJson(): String {
         // we use configCopy to save the state of everything as a snapshot (and then we serialize it)
-        configMap.forEach { (k,v) ->
-            if (!v.override) {
+        origCopyConfigMap.forEach { (k,v) ->
+            val configured = configMap[k]
+            if (configured?.override == false) {
                 // this will change what the "original copy" is recorded as having.
-                configMapCopy[k]!!.set(v.get())
+                v.set(configured.get())
             }
         }
 
-        return json.toJson(configCopy)
+        return json.toJson(origCopyConfig)
     }
 
     /**
@@ -674,8 +838,6 @@ class ConfigProcessor<T : Any>
         saveFile ?: configFile ?.writeText(configToString, Charsets.UTF_8)
         return configToString
     }
-
-
 
     /**
      * Allows the ability to `get` or `set` configuration properties. Will call System.exit() if a get/set was done
@@ -786,6 +948,21 @@ class ConfigProcessor<T : Any>
             Int::class -> this.toInt()
             Long::class -> this.toLong()
             Short::class -> this.toShort()
+            else -> this
+        }
+    }
+
+    private fun defaultType(propertyType: Any): Any {
+        return when (propertyType) {
+            String::class -> ""
+            Boolean::class -> false
+            Byte::class -> 0.toByte()
+            Char::class -> Character.MIN_VALUE
+            Double::class -> 0.0
+            Float::class -> 0.0f
+            Int::class -> 0
+            Long::class -> 0L
+            Short::class -> 0.toShort()
             else -> this
         }
     }

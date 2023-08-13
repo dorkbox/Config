@@ -16,12 +16,64 @@
 package dorkbox
 
 import dorkbox.config.ConfigProcessor
-import dorkbox.json.Alias
+import dorkbox.json.annotation.Json
 import org.junit.Assert
 import org.junit.Test
 
 
 class Test {
+
+    @Test
+    fun arrayTest() {
+        val conf = ArrayConf()
+
+        Assert.assertArrayEquals(arrayOf(1, 2, 3, 4), conf.ips)
+
+        val config = ConfigProcessor(conf)
+            .envPrefix("")
+            .cliArguments(arrayOf("ips[0]=7"))
+            .process()
+
+        Assert.assertArrayEquals(arrayOf(7, 2, 3, 4), conf.ips)
+
+        config.cliArguments(arrayOf("ips[4]=7"))
+              .process()
+
+        Assert.assertArrayEquals(arrayOf(7, 2, 3, 4, 7), conf.ips)
+    }
+
+    @Test
+    fun charArrayTest() {
+        val conf = CharArrayConf()
+
+        Assert.assertArrayEquals(arrayOf('1', '2', '3', '4'), conf.ips)
+
+        ConfigProcessor(conf)
+            .envPrefix("")
+            .cliArguments(arrayOf("ips[4]=7", "ips[7]=9"))
+            .process()
+
+        Assert.assertArrayEquals(arrayOf('1', '2', '3', '4', '7', Character.MIN_VALUE, Character.MIN_VALUE, '9'), conf.ips)
+    }
+
+    @Test
+    fun listTest() {
+        val conf = ListConf()
+
+        Assert.assertEquals(listOf(1, 2, 3, 4), conf.ips)
+
+        val config = ConfigProcessor(conf)
+            .envPrefix("")
+            .cliArguments(arrayOf("ips[0]=7"))
+            .process()
+
+        Assert.assertEquals(listOf(7, 2, 3, 4), conf.ips)
+
+        config.cliArguments(arrayOf("ips[4]=7"))
+            .process()
+
+        Assert.assertEquals(listOf(7, 2, 3, 4, 7), conf.ips)
+    }
 
     @Test
     fun cliTest() {
@@ -98,8 +150,20 @@ class Test {
         System.clearProperty("server")
     }
 
+    class ListConf {
+        var ips = mutableListOf(1, 2, 3, 4)
+    }
+
+    class ArrayConf {
+        var ips = arrayOf(1, 2, 3, 4)
+    }
+
+    class CharArrayConf {
+        var ips = arrayOf('1', '2', '3', '4')
+    }
+
     class Conf {
-        @Alias("ip_address")
+        @Json("ip_address")
         var ip = "127.0.0.1"
 
         var server = false

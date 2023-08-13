@@ -16,11 +16,32 @@
 
 package dorkbox.config
 
+import java.lang.Exception
+import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 
-data class ConfigProp(val parent: Any, val member: KProperty<Any>) {
+data class ConfigProp(val parentConf: ConfigProp?, val parent: Any, val member: KProperty<Any>, val collectionName: String, val index: Int) {
+
+    val isCollection: Boolean = parent is Collection<*>
+
+    val returnType: KClass<*>
+        get() {
+            return when (parent) {
+                is Array<*>          -> {
+                    member.returnType.jvmErasure.javaObjectType.componentType.kotlin
+                }
+                is Collection<*> -> {
+                    member.returnType.arguments.first().type!!.jvmErasure
+                }
+                else         -> {
+                    member.returnType.jvmErasure
+                }
+            }
+        }
+
     var override = false
 
     @Synchronized
@@ -29,17 +50,43 @@ data class ConfigProp(val parent: Any, val member: KProperty<Any>) {
     }
 
     @Synchronized
-    fun get(): Any {
-        return member.getter.call(parent)
+    fun get(): Any? {
+        return if (parent is Array<*>) {
+            parent[index]
+        }
+        else if (parent is ArrayList<*>) {
+            parent[index]
+        }
+        else if (parent is MutableList<*>) {
+            parent[index]
+        }
+        else {
+            member.getter.call(parent)
+        }
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Synchronized
-    fun set(value: Any) {
-        require(member is KMutableProperty<*>) { "Cannot set the immutable type ${member.returnType.jvmErasure}" }
+    fun set(value: Any?) {
+        if (member is KMutableProperty<*>) {
+            if (parent is Array<*>) {
+                (parent as Array<Any?>)[index] = value
+            }
+            else if (parent is ArrayList<*>) {
+                (parent as ArrayList<Any?>).set(index, value)
+            }
+            else if (parent is AbstractList<*>) {
+                (parent as MutableList<Any?>).set(index, value)
+            }
+            else {
+                member.setter.call(parent, value)
+            }
 
-        member.setter.call(parent, value)
-        // if the value is manually "set", then we consider it "not overridden"
-        override = false
+            // if the value is manually "set", then we consider it "not overridden"
+            override = false
+        } else {
+            throw Exception("Cannot set the immutable type ${member.returnType.jvmErasure}")
+        }
     }
 
     /**
@@ -47,7 +94,7 @@ data class ConfigProp(val parent: Any, val member: KProperty<Any>) {
      *
      * When we are SAVING the data, we only save the baseline data, meaning that we do not save the overridden values
      */
-    fun setOverload(overriddenValue: Any) {
+    fun override(overriddenValue: Any?) {
         val get = get()
         if (get != overriddenValue) {
             set(overriddenValue)
