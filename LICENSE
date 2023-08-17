@@ -33,6 +33,12 @@
              Mario Zechner
              Nathan Sweet
 
+         - SLF4J - Simple facade or abstraction for various logging frameworks
+           [MIT License]
+           https://www.slf4j.org
+           Copyright 2023
+             QOS.ch
+
          - Kotlin - 
            [The Apache Software License, Version 2.0]
            https://github.com/JetBrains/kotlin

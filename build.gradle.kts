@@ -38,7 +38,7 @@ object Extras {
     // set for the project
     const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
-    const val version = "2.4"
+    const val version = "2.5"
 
     // set as project.ext
     const val name = "Config"
@@ -83,8 +83,8 @@ tasks.jar.get().apply {
 dependencies {
     api(kotlin("reflect"))
 
-    api("com.dorkbox:Json:1.5")
-    api("com.dorkbox:OS:1.6")
+    api("com.dorkbox:Json:1.6")
+    api("com.dorkbox:OS:1.7")
     api("com.dorkbox:Updates:1.1")
 
     api("org.slf4j:slf4j-api:2.0.7")
