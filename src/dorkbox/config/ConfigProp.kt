@@ -20,16 +20,13 @@ import java.lang.Exception
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
-import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 
-data class ConfigProp(val parentConf: ConfigProp?, val parent: Any, val member: KProperty<Any>, val collectionName: String, val index: Int) {
-
-    val isCollection: Boolean = parent is Collection<*>
+internal data class ConfigProp(val key: String, val parentConf: ConfigProp?, val parentObj: Any, val member: KProperty<Any>, val collectionName: String, val index: Int, val ignore: Boolean) {
 
     val returnType: KClass<*>
         get() {
-            return when (parent) {
+            return when (parentObj) {
                 is Array<*>          -> {
                     member.returnType.jvmErasure.javaObjectType.componentType.kotlin
                 }
@@ -46,22 +43,25 @@ data class ConfigProp(val parentConf: ConfigProp?, val parent: Any, val member: 
 
     @Synchronized
     fun isSupported(): Boolean {
-        return member is KMutableProperty<*>
+        return !ignore && member is KMutableProperty<*>
     }
 
     @Synchronized
     fun get(): Any? {
-        return if (parent is Array<*>) {
-            parent[index]
+        return if (parentObj is Array<*>) {
+            parentObj[index]
         }
-        else if (parent is ArrayList<*>) {
-            parent[index]
+        else if (parentObj is ArrayList<*>) {
+            parentObj[index]
         }
-        else if (parent is MutableList<*>) {
-            parent[index]
+        else if (parentObj is AbstractList<*>) {
+            parentObj[index]
+        }
+        else if (parentObj is MutableList<*>) {
+            parentObj[index]
         }
         else {
-            member.getter.call(parent)
+            member.getter.call(parentObj)
         }
     }
 
@@ -69,17 +69,17 @@ data class ConfigProp(val parentConf: ConfigProp?, val parent: Any, val member: 
     @Synchronized
     fun set(value: Any?) {
         if (member is KMutableProperty<*>) {
-            if (parent is Array<*>) {
-                (parent as Array<Any?>)[index] = value
+            if (parentObj is Array<*>) {
+                (parentObj as Array<Any?>)[index] = value
             }
-            else if (parent is ArrayList<*>) {
-                (parent as ArrayList<Any?>).set(index, value)
+            else if (parentObj is ArrayList<*>) {
+                (parentObj as ArrayList<Any?>).set(index, value)
             }
-            else if (parent is AbstractList<*>) {
-                (parent as MutableList<Any?>).set(index, value)
+            else if (parentObj is MutableList<*>) {
+                (parentObj as MutableList<Any?>).set(index, value)
             }
             else {
-                member.setter.call(parent, value)
+                member.setter.call(parentObj, value)
             }
 
             // if the value is manually "set", then we consider it "not overridden"
@@ -107,6 +107,8 @@ data class ConfigProp(val parentConf: ConfigProp?, val parent: Any, val member: 
         if (other !is ConfigProp) return false
 
         if (isSupported() != other.isSupported()) return false
+        if (ignore != other.ignore) return false
+        if (key != other.key) return false
         if (get() != other.get()) return false
         return true
     }
