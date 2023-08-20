@@ -27,7 +27,7 @@ gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS   // always show th
 
 plugins {
     id("com.dorkbox.GradleUtils") version "3.17"
-    id("com.dorkbox.Licensing") version "2.25"
+    id("com.dorkbox.Licensing") version "2.26"
     id("com.dorkbox.VersionUpdate") version "2.8"
     id("com.dorkbox.GradlePublish") version "1.18"
 
@@ -38,7 +38,7 @@ object Extras {
     // set for the project
     const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
-    const val version = "2.5"
+    const val version = "2.6"
 
     // set as project.ext
     const val name = "Config"
@@ -83,11 +83,11 @@ tasks.jar.get().apply {
 dependencies {
     api(kotlin("reflect"))
 
-    api("com.dorkbox:Json:1.6")
-    api("com.dorkbox:OS:1.7")
+    api("com.dorkbox:Json:1.7")
+    api("com.dorkbox:OS:1.8")
     api("com.dorkbox:Updates:1.1")
 
-    api("org.slf4j:slf4j-api:2.0.7")
+    implementation("org.slf4j:slf4j-api:2.0.7")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("ch.qos.logback:logback-classic:1.4.5")
