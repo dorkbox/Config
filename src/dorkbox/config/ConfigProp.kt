@@ -41,6 +41,12 @@ internal data class ConfigProp(val key: String, val parentConf: ConfigProp?, val
 
     var override = false
 
+    /**
+     * We explicitly ignore BASE collection/array types.
+     *
+     * We have them as part of our parsing logic, so that we can properly set collection/array values, but do not want them for
+     * "general" logic
+     */
     @Synchronized
     fun isSupported(): Boolean {
         return !ignore && member is KMutableProperty<*>

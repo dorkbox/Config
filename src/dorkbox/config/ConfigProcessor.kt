@@ -742,7 +742,10 @@ class ConfigProcessor<T : Any>
             val returnType = prop.returnType
 
             if (!prop.isSupported()) {
-                LoggerFactory.getLogger(ConfigProcessor::class.java).error("${prop.member.name} (${returnType.javaObjectType.simpleName}) overloading is not supported. Ignoring")
+                if (!prop.ignore) {
+                    // only show an error if we are not the proper type. We explicitly ignore BASE collection/array types - so properly ignore those
+                    LoggerFactory.getLogger(ConfigProcessor::class.java).error("${prop.member.name} (${returnType.javaObjectType.simpleName}) overloading is not supported. Ignoring")
+                }
                 return@forEach
             }
 
