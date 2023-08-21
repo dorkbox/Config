@@ -323,8 +323,8 @@ class ConfigProcessor<T : Any>
     // DEEP COPY of the original values from the file, so when saving, we know what the
     // overridden values are and can skip saving them
     // NOTE: overridden values are set via CLI/Sys/Env!!
-    private lateinit var origCopyConfig: T
-    private lateinit var origCopyConfigMap: Map<String, ConfigProp>
+    private var origCopyConfig: T? = null
+    private var origCopyConfigMap: Map<String, ConfigProp>? = null
 
 
     init {
@@ -392,6 +392,17 @@ class ConfigProcessor<T : Any>
         return this
     }
 
+    private fun loadOrigCopyConfig(configObject: T) {
+        // now setup the "original" objects. ORIGINAL means...
+        // 1) the original, passed in config object IFF no other config data was loaded
+        // 2) the file (as an object)
+        // 3) the text (as an object)
+        val origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
+        this.origCopyConfig = origCopyConfig
+        origCopyConfigMap = createConfigMap(origCopyConfig)
+    }
+
+
     /**
      * Specify the baseline data (as a JSON string) used to populate the values of the config object.
      *
@@ -427,6 +438,7 @@ class ConfigProcessor<T : Any>
      *
      * If the specified file DOES NOT load, then it will not be used or processed!
      */
+    @Suppress("DuplicatedCode")
     @Synchronized
     fun loadAndProcess(configFile: File): ConfigProcessor<T> {
         val configObject =
@@ -496,6 +508,7 @@ class ConfigProcessor<T : Any>
      *
      * If the specified file DOES NOT load, then it will not be used!
      */
+    @Suppress("DuplicatedCode")
     @Synchronized
     fun load(configFile: File): Boolean {
         val configObject =
@@ -534,7 +547,7 @@ class ConfigProcessor<T : Any>
     // support
     //    thing[0].flag = true  (array + list)
     //    thing[0].bah.flag = true  (array + list)
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "UNUSED_DESTRUCTURED_PARAMETER_ENTRY")
     @Synchronized
     private fun load(configObject: T) {
         val incomingDataConfigMap = createConfigMap(configObject)
@@ -640,13 +653,7 @@ class ConfigProcessor<T : Any>
             }
         }
 
-
-        // now setup the "original" objects. ORIGINAL means...
-        // 1) the original, passed in config object IFF no other config data was loaded
-        // 2) the file (as an object)
-        // 3) the text (as an object)
-        origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
-        origCopyConfigMap = createConfigMap(origCopyConfig)
+        loadOrigCopyConfig(configObject)
     }
 
 
@@ -662,17 +669,13 @@ class ConfigProcessor<T : Any>
         configString?.also { load(it) }
 
         if (configFile == null && configString == null) {
-            // now setup the "original" objects. ORIGINAL means...
-            // 1) the original, passed in config object IFF no other config data was loaded
-            // 2) the file (as an object)
-            // 3) the text (as an object)
-            origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
-            origCopyConfigMap = createConfigMap(origCopyConfig)
+            loadOrigCopyConfig(configObject)
         }
 
         return postProcess()
     }
 
+    @Suppress("UNUSED_DESTRUCTURED_PARAMETER_ENTRY")
     private fun postProcess() : ConfigProcessor<T> {
         // this permits a bash/batch/CLI invocation of "get xyz" or "set xyz" so we can be interactive with the CLI
         // if there is no get/set CLI argument, then this does nothing.
@@ -865,7 +868,7 @@ class ConfigProcessor<T : Any>
         return originalArray
     }
 
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "CascadeIf")
     private fun expandArrays(prop: ConfigProp, newProps: MutableMap<String, ConfigProp>) {
 
         val returnType = prop.returnType
@@ -974,8 +977,13 @@ class ConfigProcessor<T : Any>
     */
     @Synchronized
     fun originalJson(): String {
+        if (origCopyConfigMap == null) {
+            // we might not have loaded the file yet (because invalid configs/etc), so make sure it's loaded!
+            loadOrigCopyConfig(configObject)
+        }
+
         // we use configCopy to save the state of everything as a snapshot (and then we serialize it)
-        origCopyConfigMap.forEach { (k,v) ->
+        origCopyConfigMap!!.forEach { (k,v) ->
             val configured = configMap[k]
             if (configured != null && !configured.ignore && !configured.override) {
                 // this will change what the "original copy" is recorded as having.
@@ -983,7 +991,7 @@ class ConfigProcessor<T : Any>
             }
         }
 
-        return json.toJson(origCopyConfig)
+        return json.toJson(origCopyConfig!!)
     }
 
     /**
