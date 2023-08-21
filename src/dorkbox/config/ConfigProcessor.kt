@@ -123,7 +123,7 @@ class ConfigProcessor<T : Any>
         /**
          * Gets the version number.
          */
-        const val version = "2.6"
+        const val version = "2.7"
 
         init {
             // Add this project to the updates system, which verifies this class + UUID + version information
