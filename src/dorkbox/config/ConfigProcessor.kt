@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 dorkbox, llc
+ * Copyright 2024 dorkbox, llc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,8 @@ import dorkbox.os.OS
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.lang.reflect.Modifier
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KVisibility
@@ -397,7 +395,7 @@ class ConfigProcessor<T : Any>
         // 1) the original, passed in config object IFF no other config data was loaded
         // 2) the file (as an object)
         // 3) the text (as an object)
-        val origCopyConfig = json.fromJson(objectType.java, json.toJson(configObject))!!
+        val origCopyConfig = json.fromExplicit(objectType.java, json.to(configObject))!!
         this.origCopyConfig = origCopyConfig
         origCopyConfigMap = createConfigMap(origCopyConfig)
     }
@@ -413,7 +411,7 @@ class ConfigProcessor<T : Any>
         val configObject =
             try {
                 if (configString.isNotBlank()) {
-                    json.fromJson(objectType.java, configString)
+                    json.fromExplicit(objectType.java, configString)
                 } else {
                     null
                 }
@@ -447,7 +445,7 @@ class ConfigProcessor<T : Any>
                 val fileContents = configFile.readText(Charsets.UTF_8)
                 if (fileContents.isNotEmpty()) {
                     try {
-                        json.fromJson(objectType.java, fileContents)
+                        json.fromExplicit(objectType.java, fileContents)
                     }
                     catch (exception: Exception) {
                         // there was a problem parsing the config
@@ -483,7 +481,7 @@ class ConfigProcessor<T : Any>
         val configObject =
             try {
                 if (configString.isNotBlank()) {
-                    json.fromJson(objectType.java, configString)
+                    json.fromExplicit(objectType.java, configString)
                 } else {
                     null
                 }
@@ -517,7 +515,7 @@ class ConfigProcessor<T : Any>
                 val fileContents = configFile.readText(Charsets.UTF_8)
                 if (fileContents.isNotEmpty()) {
                     try {
-                        json.fromJson(objectType.java, fileContents)
+                        json.fromExplicit(objectType.java, fileContents)
                     }
                     catch (exception: Exception) {
                         // there was a problem parsing the config
@@ -991,7 +989,7 @@ class ConfigProcessor<T : Any>
             }
         }
 
-        return json.toJson(origCopyConfig!!)
+        return json.to(origCopyConfig!!)
     }
 
     /**
@@ -999,7 +997,7 @@ class ConfigProcessor<T : Any>
      */
     @Synchronized
     fun json(): String {
-        return json.toJson(configObject)
+        return json.to(configObject)
     }
 
     /**

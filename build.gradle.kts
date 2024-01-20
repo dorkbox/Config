@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 dorkbox, llc
+ * Copyright 2024 dorkbox, llc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import java.time.Instant
 
 ///////////////////////////////
 //////    PUBLISH TO SONATYPE / MAVEN CENTRAL
@@ -83,7 +81,7 @@ tasks.jar.get().apply {
 dependencies {
     api(kotlin("reflect"))
 
-    api("com.dorkbox:Json:1.7")
+    api("com.dorkbox:Json:1.8")
     api("com.dorkbox:OS:1.8")
     api("com.dorkbox:Updates:1.1")
 
