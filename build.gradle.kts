@@ -27,7 +27,7 @@ plugins {
     id("com.dorkbox.GradleUtils") version "3.18"
     id("com.dorkbox.Licensing") version "2.28"
     id("com.dorkbox.VersionUpdate") version "2.8"
-    id("com.dorkbox.GradlePublish") version "1.20"
+    id("com.dorkbox.GradlePublish") version "1.22"
 
     kotlin("jvm") version "1.9.0"
 }
@@ -36,7 +36,7 @@ object Extras {
     // set for the project
     const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
-    const val version = "2.8"
+    const val version = "2.9"
 
     // set as project.ext
     const val name = "Config"
@@ -82,10 +82,10 @@ dependencies {
     api(kotlin("reflect"))
 
     api("com.dorkbox:Json:1.8")
-    api("com.dorkbox:OS:1.8")
+    api("com.dorkbox:OS:1.11")
     api("com.dorkbox:Updates:1.1")
 
-    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("org.slf4j:slf4j-api:2.0.11")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("ch.qos.logback:logback-classic:1.4.5")
