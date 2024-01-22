@@ -36,7 +36,7 @@ object Extras {
     // set for the project
     const val description = "CLI, system properties, environment variables, or JSON text/file input processing."
     const val group = "com.dorkbox"
-    const val version = "2.9"
+    const val version = "2.9.1"
 
     // set as project.ext
     const val name = "Config"
@@ -81,7 +81,7 @@ tasks.jar.get().apply {
 dependencies {
     api(kotlin("reflect"))
 
-    api("com.dorkbox:Json:1.8")
+    api("com.dorkbox:Json:1.9")
     api("com.dorkbox:OS:1.11")
     api("com.dorkbox:Updates:1.1")
 
